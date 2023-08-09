@@ -8,6 +8,7 @@
 #define LINE_LENGTH 80
 
 
+
 enum boolean {FALSE, TRUE};
 int ic; /*Instruction counter*/
 
