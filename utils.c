@@ -8,9 +8,17 @@
 #define HALF_BIN_LEN 6
 #define B_64_LEN 2
 
+
+const char* directives[] = {".data", ".string", ".entry", ".extern"}; 
+const char* ass_comm[] = {"mov","cmp", "add", "sub", "lea",
+                          "not", "clr", "inc", "dec", "jmp", "bne", "red",
+                          "prn", "jsr", "rts", "stop"};
+
+
 /*Splits the string of the bin-num and convert to base 64 string*/
 /*TODO check is it legaL TO RETURN an inner string*/
-char *analize_bin(char *bin_num){
+char *analize_bin(char *bin_num){/*TODO we need to change the return, this is ilegal 
+to return a local var, maybe we should print it*/
     int i = 0; 
     char first_bin[HALF_BIN_LEN +1];
     char second_bin[HALF_BIN_LEN +1];
@@ -35,13 +43,7 @@ char *analize_bin(char *bin_num){
     full_sign[2] = 0;
     printf("%s\n", full_sign);
 
-   /*printf("my firast is: %s\n", first_bin);
-    printf("my sec is: %s\n", second_bin);
-*/
-
     return full_sign;
-
-
 }
 
 /*takes the half binary and convert it to a b64 sign*/
@@ -79,8 +81,132 @@ int arr_len(char* c){
   
   return length; 
 }
-
+/*converting the decimal number to base 64 sign*/
 char dec_to_b64(int num){
   char base64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
   return base64[num];
 }
+
+/* This function creates a file name by appending suitable extension (by type) to the original string */
+char *create_file_name(char *original, int format){
+    char *name = (char *) malloc(strlen(original) + SUFFIX);
+    if(name == NULL)
+    {
+        fprintf(stderr, "Dynamic allocation error.");
+        exit(0);
+    }
+
+    strcpy(name, original);
+
+    /* Concatenating the required suffix */
+
+    switch (format)
+    {
+        case AM:
+            strcat(name, ".as");
+            break;
+/*add other options*/
+
+    }
+    return name;
+}
+
+/*jumping the spaces in the begining of a line*/
+char* space_jump(char* ch) {
+    if (ch == NULL)
+        return NULL;
+
+    while (*ch == ' ') 
+        ch++;
+
+    return ch;
+}
+
+void sec_pass(FILE *fp, char *filename){
+  char line[LINE_LENGTH];
+  int num_of_line = 1;
+  /*ic = 0; TODO/*In the rewind we should re-count the instruction*/
+  /*TODO change the while loop to this: fgets(line, LINE_LENGTH, fp)!=NULL*/
+  while(fgets(line, LINE_LENGTH, fp)!=NULL){/*the loop stops in the end of the file*/
+    num_of_line++;
+
+    
+    char chunk[LINE_LENGTH] = "     abc"; ;/*chank of letters from the line*/
+    int i;
+    
+    
+    
+    
+    
+  }
+
+
+}
+
+/*Analize the beggining of the line and return 1 if the first word is a label*/
+/*int isFirstWordLabel(char* word) {
+    int i;
+    int size = strlen(word);
+    char* withoutColon;
+    memset(withoutColon, '\0', size);
+    strncpy(withoutColon, word, size-1);
+    if (size > MAX_LABEL_LENGTH + 1){//If the word to much long
+        return 0;
+    }
+    if (!(isalpha(word))){//If the first char is not letter
+        return 0;
+    }
+    if (word[size-1] != ':'){
+        return 0;
+    }
+    // check if the saved instruction 
+    if (isInstruction(withoutColon)) {
+        handleError("you can't use saved word as a label");
+    }
+    for (i = 0; i < size-1; i++){ /Check if all characters are valid/
+        if (isalpha(word[i] || isdigit(word[i]))){
+            return 0;
+        }
+    }
+    return 1;
+}*/
+
+
+/*checks if a word in the line is a valid label*/
+/*int isValidLabel(char * word){
+    int i;
+    int size = strlen(word);
+    char * withoutColon;
+    (void)strncmp(withoutColon, word, size-2);
+    printf("withoutColon: %s\n",withoutColon);
+    if (size > MAX_LABEL_LENGTH + 1){/*If the word to much long 
+        return 0;
+    }
+    if (!(isalpha(word))){/*If the first char is not letter/
+        return 0;
+    }
+    if (word[size-2] != ':'){
+        return 0;
+    }
+    /* check if the saved instruction 
+    if (isInstruction(withoutColon)) {
+        handleError("you can't use saved word as a label");
+    }
+    for (i = 0; i < size-1; i++){ /Check if all characters are valid/
+        if (isalpha(word[i] || isdigit(word[i]))){
+            return 0;
+        }
+    }
+    return 1;
+}*/
+
+/*check if word in the line is an instruction*/
+/*char* isInstruction(char* word) {
+    int i;
+    for (i = 0; i < INSTRUCTIONS_NUM; i++) {
+        if (!strcmp(word, ass_comm[i])) {
+            return word;
+        }
+    }
+    return NULL;
+}*/
