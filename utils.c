@@ -2,12 +2,14 @@
 #include <string.h>
 #include <math.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 #include "utils.h"
 #define BIN_LENGTH 12 
 #define HALF_BIN_LEN 6
 #define B_64_LEN 2
 
+char memory[1024][12];/*TODO I dont know if we need it*/
 
 const char* directives[] = {".data", ".string", ".entry", ".extern"}; 
 const char* ass_comm[] = {"mov","cmp", "add", "sub", "lea",
@@ -113,27 +115,34 @@ char *create_file_name(char *original, int format){
 
 /*jumping the spaces in the begining of a line*/
 char* space_jump(char* ch) {
-    if (ch == NULL)
-        return NULL;
 
-    while (*ch == ' ') 
-        ch++;
-
+    if(ch == NULL)
+      return NULL;
+    while (isspace(*ch)) 
+      ch++;
     return ch;
 }
 
-void sec_pass(FILE *fp, char *filename){
+void sec_pass(FILE *fp, char *filename){/*TODO need to movw to deifferent file*/
   char line[LINE_LENGTH];
   int num_of_line = 1;
   /*ic = 0; TODO/*In the rewind we should re-count the instruction*/
   /*TODO change the while loop to this: fgets(line, LINE_LENGTH, fp)!=NULL*/
   while(fgets(line, LINE_LENGTH, fp)!=NULL){/*the loop stops in the end of the file*/
-    num_of_line++;
+    char *line_no_space;
+    char word[LINE_LENGTH]; /*chank of letters from the line*/
+    
 
-    
-    char chunk[LINE_LENGTH] = "     abc"; ;/*chank of letters from the line*/
-    int i;
-    
+    num_of_line++;
+     printf("the line is %s", line);/*TODO-test*/ 
+    line_no_space = space_jump(line);
+    printf("the new line is %s", line_no_space);/*TODO-test*/
+
+    parse_word(line_no_space, word);
+    /*TODO making a func who parsing a chunk of letters*/
+
+
+
     
     
     
@@ -141,6 +150,36 @@ void sec_pass(FILE *fp, char *filename){
   }
 
 
+}
+
+char *parse_word(char *line, char *word){/*we need to take line no spaces*/
+  int i;
+  for(i = 0; line[i] != ' '; i++){
+      word[i] = line[i];
+  }
+   word[i] = 0;/*adding the 'null' in the end*/
+  return word;
+}
+
+char *write_binary_line(*temp_binary){
+  int i = 0;
+  char *code_type = {00, 01, 10};/*00 = abs., 01 = ext., 10 = reloc.*/
+  /*note: we have the same arr in the header*/
+  char *commands_binary[] = {"0000", "0001", "0010", "0011", "0100", "0101", "0110", "0111", 
+            "1000", "1001", "1010", "1011", "1100", "1101", "1110", "1111"};
+
+  char *adressing[] = {/*Immediate adressing*/ 001, /*Direcrt adressing*/ 011, /*Direct register adressing*/ 101};
+
+
+  while(i<12){//initilize the string
+    temp_binary[i] = '0';
+    i++;
+  }
+
+  
+
+
+  return temp_binary; 
 }
 
 /*Analize the beggining of the line and return 1 if the first word is a label*/
