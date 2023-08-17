@@ -17,7 +17,8 @@ int main(int argc, char *argv[]){
   int i;
   char *input_filename;
   FILE *fp;
-  char *myLine = "     abc"
+  char *myLine = "     abc";
+  char temp_binary[12];
 
   for(i=1 ; i<argc ; i++){
     input_filename = create_file_name(argv[i], AM);
@@ -34,7 +35,7 @@ int main(int argc, char *argv[]){
 
 
 /*Here we need to add the function*/
-  /*sec_pass(fp, input_filename);*/
+  sec_pass(fp, input_filename);
 
 
 
