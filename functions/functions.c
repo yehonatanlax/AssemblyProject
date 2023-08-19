@@ -22,8 +22,76 @@ const char* ass_comm[] = {"mov","cmp", "add", "sub", "lea",
                           "prn", "jsr", "rts", "stop"};
 
 /*======================================================================*/
-/*
-    remove spaces before content,
+
+
+/*takes the half binary and convert it to a b64 sign*/
+char bin_to_b64_sign(char *bin){
+  int dec = bin_to_dec(bin);
+  char sign = dec_to_b64(dec);
+  return sign;
+}
+
+/*convert binary number to a decimal number*/
+int bin_to_dec(char* dec){/*TODO add edge cases!!!!*/
+  int i;
+  int j = 0;
+  int sum = 0;
+  for(i = strlen(dec)-1; i >= 0 ; i--){
+    
+    if (dec[i] == '1')
+      sum += pow(2, j);
+    j++;
+  }
+  return sum;
+}
+
+/*converting the decimal number to base 64 sign*/
+char dec_to_b64(int num){
+  char base64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+  return base64[num];
+}
+
+char *write_binary_line(*temp_binary){
+  int i = 0;
+  char *code_type = {00, 01, 10};/*00 = abs., 01 = ext., 10 = reloc.*/
+  /*note: we have the same arr in the header*/
+  char *commands_binary[] = {"0000", "0001", "0010", "0011", "0100", "0101", "0110", "0111", 
+            "1000", "1001", "1010", "1011", "1100", "1101", "1110", "1111"};
+
+  char *adressing[] = {/*Immediate adressing*/ 001, /*Direcrt adressing*/ 011, /*Direct register adressing*/ 101};
+
+
+  while(i<12){//initilize the string
+    temp_binary[i] = '0';
+    i++;
+  }
+
+  /* This function creates a file name by appending suitable extension (by type) to the original string */
+char *create_file_name(char *original, int format){
+    char *name = (char *) malloc(strlen(original) + SUFFIX);
+    if(name == NULL)
+    {
+        fprintf(stderr, "Dynamic allocation error.");
+        exit(0);
+    }
+
+    strcpy(name, original);
+
+    /* Concatenating the required suffix */
+
+    switch (format)
+    {
+        case AM:
+            strcat(name, ".as");
+            break;
+/*add other options*/
+
+    }
+    return name;
+}
+
+
+/* remove spaces before content,
     This func for char[].
 */
 void removeSpacesBefore(char *str) {
@@ -149,7 +217,7 @@ int remove_comma(char* line, int line_number) {
 }
 
 
-char* encode_operand(char* operand) {
+char* encode_operand(int operand_src, int insruction, int operand_dst, int ARE  ) {
     /*printf("--- operand: %s\n", operand);*/
     return operand;
 }

@@ -173,29 +173,3 @@ char* checkIfItsMacro(char * line){
 }
 
 
-/*int main() {
-    const char* filename = "/home/giat/Desktop/openU/C_course/example_macro.txt";
-    
-    int i;
-  
-  
-    read_macros(filename, &macros, &num_macros);
-    printf("%d\n",num_macros);  
-    printf("bbbb%s\n",macros[1].name);  
-    replace_macro_content(&macros, num_macros, filename);
-   
-     Display the extracted macros and their contents
-    for (i = 0; i < num_macros; i++) {
-        printf("Macro Name: %s\n", macros[i].name);
-        printf("Macro Content:\n%s\n", macros[i].content);
-    }
-
-    for (i = 0; i < num_macros; i++) {
-        free(macros[i].name);
-        free(macros[i].content);
-    }
-    free(macros);
-
-    return 0;
-}
-*/

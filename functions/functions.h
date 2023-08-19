@@ -3,8 +3,25 @@
 
 #define MAX_LINE_LENGTH 80
 #define MAX_LABEL_LENGTH 31
+#define BIN_LENGTH 12 
+#define HALF_BIN_LEN 6
+#define B_64_LEN 2
 
 
+/*converting binary functions*/
+char bin_to_b64_sign(char *);
+
+int bin_to_dec(char *);
+
+char dec_to_b64(int);
+
+char *split_bin(char *);
+
+char *analize_bin(char *);
+
+char *write_binary_line(*temp_binary);
+
+char *create_file_name(char *original, int format);
 
 void removeSpacesBefore(char *str);
 
