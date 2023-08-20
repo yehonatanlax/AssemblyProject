@@ -4,6 +4,11 @@
 #include <ctype.h>
 #include "../functions/functions.h"
 #include "macro.h"
+#include "../labels/labels.h"
+#include "../dc/dc.h"
+#include "../ic/ic.h"
+#include "../preprocessor/macro.h"
+#include "../extern/extern.h"
 
 
 #define MAX_LINE_LENGTH 80
@@ -35,7 +40,8 @@ char* preprocessor(const char* filename, int line_number) {
                 }
             }
             inside_macro = 1;
-        } else if (strncmp(line, "endmcro", 7) == 0) {
+        } 
+        else if (strncmp(line, "endmcro", 7) == 0) {
             if (inside_macro && name != NULL) {
                 /*if (content != NULL) {// אני חושב שהקטע הזה מיותר כרגע עדיין לא מוחק לגמרי כדי שלא יהיו הפתעות
                     end = content + strlen(content) - 1;
@@ -47,7 +53,8 @@ char* preprocessor(const char* filename, int line_number) {
                 content = NULL;/*Cleening the variable "content" for the next macro*/
                 inside_macro = 0;
             }
-        } else if (inside_macro && name != NULL) {
+        } 
+        else if (inside_macro && name != NULL) {
             if (content == NULL) {
                 content = malloc(strlen(line) + 1);
                 *content = '\0';
@@ -93,27 +100,32 @@ char* replace_macro_content(const char* filepath) {
     }
 
     while (fgets(line, MAX_LINE_LENGTH, fileReed)) {
+        char * first_word;
         removeSpacesBefore(line);
-        strcpy(isMacro,checkIfItsMacro(getFirstWord(line)));/* take the first word to avoid errors of spaces after the name of the macro*/
+        first_word = getFirstWord(line);
+        strcpy(isMacro,checkIfItsMacro(first_word));/* take the first word to avoid errors of spaces after the name of the macro*/
         if (inside_macro && (strncmp(line, "endmcro", 7) == 0)){
+            printf("in conitinue 1");
             inside_macro = 0;
             continue;
         }
         else if(inside_macro){
+            printf("in conitinue 2");
             continue;
         }
         else if ((strncmp(line, "mcro", 4) == 0)){
+            printf("in conitinue 3");
             inside_macro = 1;
             continue;
         }
         else if (!(strcmp(isMacro,"null") == 0)) {
+        printf("in else if");
             for (i = 0; i < num_macros; i++){
                 if (strcmp(isMacro, (macros)[i].name) == 0){
                     printf("macro content: %s\n",(macros)[i].content);
                     strcpy(updated_content, (macros)[i].content);
                     printf("updated_content1111: %s\n",updated_content);
                     fputs(updated_content, fileWrite);
-
                     continue;
                 }
             }
@@ -137,7 +149,7 @@ void add_macro(char* name, char* content, int line_number) {
         handleError("name of macro not valid dir", line_number);
         return;
     }
-    if ((isInstruction(name))){
+    if (isInstruction(name) != -1){
         handleError("name of macro not valid inst", line_number);
         return;
     }
@@ -150,7 +162,7 @@ void add_macro(char* name, char* content, int line_number) {
     (num_macros)++;
 }
 
-/*This func check if in current line have call to macro*/
+/* This func checks if in current line have call to macro */
 char* checkIfItsMacro(char * line){
     int i,size;
     char * str = (char*)malloc(MAX_LINE_LENGTH * sizeof(char));
@@ -167,8 +179,8 @@ char* checkIfItsMacro(char * line){
             strcpy(str,(macros)[i].name) ;
             break;
         }
-        strcpy(str,"null");/*If don't have match return null*/
     }
+    strcpy(str,"null");/*If don't have match return null*/
     return str;
 }
 

@@ -1,8 +1,8 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <math.h>
 #include "functions.h"
 #include "../labels/labels.h"
 #include "../dc/dc.h"
@@ -11,10 +11,12 @@
 #include "../extern/extern.h"
 
 
+
 #define MAX_LINE_LENGTH 80
 #define MAX_LABEL_LENGTH 31
 #define DIRECTIVES_NUM 4
 #define INSTRUCTIONS_NUM 16
+#define DEFAULT_BINARY "000000000000"
 
 const char* directives[] = {".data", ".string", ".entry", ".extern"}; 
 const char* ass_comm[] = {"mov","cmp", "add", "sub", "lea",
@@ -39,7 +41,7 @@ int bin_to_dec(char* dec){/*TODO add edge cases!!!!*/
   for(i = strlen(dec)-1; i >= 0 ; i--){
     
     if (dec[i] == '1')
-      sum += pow(2, j);
+     /* sum += pow(2, j);*/
     j++;
   }
   return sum;
@@ -51,43 +53,28 @@ char dec_to_b64(int num){
   return base64[num];
 }
 
-char *write_binary_line(*temp_binary){
-  int i = 0;
-  char *code_type = {00, 01, 10};/*00 = abs., 01 = ext., 10 = reloc.*/
-  /*note: we have the same arr in the header*/
-  char *commands_binary[] = {"0000", "0001", "0010", "0011", "0100", "0101", "0110", "0111", 
-            "1000", "1001", "1010", "1011", "1100", "1101", "1110", "1111"};
-
-  char *adressing[] = {/*Immediate adressing*/ 001, /*Direcrt adressing*/ 011, /*Direct register adressing*/ 101};
-
-
-  while(i<12){//initilize the string
-    temp_binary[i] = '0';
-    i++;
-  }
-
   /* This function creates a file name by appending suitable extension (by type) to the original string */
 char *create_file_name(char *original, int format){
-    char *name = (char *) malloc(strlen(original) + SUFFIX);
+    /*char *name = (char *) malloc(strlen(original) + SUFFIX);
     if(name == NULL)
     {
         fprintf(stderr, "Dynamic allocation error.");
         exit(0);
     }
 
-    strcpy(name, original);
+    strcpy(name, original);*/
 
     /* Concatenating the required suffix */
 
     switch (format)
     {
-        case AM:
+        /*case AM:
             strcat(name, ".as");
-            break;
+            break;*/
 /*add other options*/
 
     }
-    return name;
+    return "name";
 }
 
 
@@ -139,7 +126,7 @@ int can_word_be_valid_label(char* word, int line_number) {
         return 0;
     }
     /* check if the word is a saved instruction */
-    if (isInstruction(word)) {
+    if (isInstruction(word) != -1) {
         handleError("you can't use saved word as a label", line_number);
         return 0;
     }
@@ -177,14 +164,14 @@ char* isDirective(char* word) {
     return NULL;
 }
 
-char* isInstruction(char* word) {
+int isInstruction(char* word) {
     int i;
     for (i = 0; i < INSTRUCTIONS_NUM; i++) {
         if (!strcmp(word, ass_comm[i])) {
-            return word;
+            return i;
         }
     }
-    return NULL;
+    return -1;
 }
 
 void move_line_ptr_to_next_word(char* word, char* line) { 
@@ -217,9 +204,9 @@ int remove_comma(char* line, int line_number) {
 }
 
 
-char* encode_operand(int operand_src, int insruction, int operand_dst, int ARE  ) {
-    /*printf("--- operand: %s\n", operand);*/
-    return operand;
+char* encode_operand(int src_type, int insruction, int dst_type, int ARE, int src_reg, int dst_reg, char* address, char* number) {
+    printf("--- operand: src_type: %d, instruction: %d, dst_type: %d, ARE: %d, src_reg: %d, dst_reg: %d, address: %s, number: %s, \n", src_type,  insruction,  dst_type,  ARE,  src_reg,  dst_reg,  address,  number);
+    return "encode";
 }
 
 char* encode_two_regs(char* reg_src, char* reg_dst) {
@@ -280,18 +267,18 @@ void handle_instruction(char* instruction, char* line, char* label, int line_num
             if (!operand_dst_type) { /* if invalid operand type */
                 return;
             }
-            if (strcmp("prn", instruction) != 0) { /* handle all cases that aren't "prn" */
-                if (operand_dst_type == 1) {
-                    handleError("type pf operand is invalid in case 1", line_number);
+            if (operand_dst_type == 1) {
+                if (strcmp("prn", instruction) != 0) {
+                    handleError("type of operand is invalid in case 1", line_number);
                     return;
-                } 
-                else {
-                    /* replace operand with binary represintation */
-                    encoded_operands[0] = encode_operand(operand_dst);
                 }
-            } 
-            else {
-                encoded_operands[0] = encode_operand(operand_dst); /* encode prn param */
+                encoded_operands[0] = encode_operand(-1, -1, operand_dst_type, 0, -1, -1, NULL, operand_dst); /* encode param */
+            }
+            else if (operand_dst_type == 3) {
+                encoded_operands[0] = DEFAULT_BINARY;
+            }
+            else if (operand_dst_type == 5) {
+                encoded_operands[0] = encode_operand(-1, -1, operand_dst_type, 0, -1, get_register_number(operand_dst), NULL, NULL); /* encode param */
             }
 
             /* push instruction to IC data */
@@ -314,45 +301,48 @@ void handle_instruction(char* instruction, char* line, char* label, int line_num
             if (!operand_dst_type) { /* if invalid dest operand type */
                 return;
             }
-
-            /* check source operand */
             if (strcmp("lea", instruction) == 0) { /* handle "lea" instruction */
                 if (operand_src_type != 3) {
                     handleError("invalid type of operand", line_number);
                     return;
                 }
-                else {
-                    /* replace source operand with binary represintation in "lea" case */
-                    encoded_operands[0] = encode_operand(operand_src);
-                }
-            }
-            else {
-                /* replace source operand with binary represintation */
-                encoded_operands[0] = encode_operand(operand_src);
             }
 
             /* check if both are registers */
             if (operand_src_type == 5 && operand_dst_type == 5) {
                 /* replace registers operands to one binary represintation */
-                encoded_operands[0] = encode_two_regs(operand_src, operand_dst);
+                encoded_operands[0] = encode_operand(operand_src_type, -1, operand_dst_type, 0, get_register_number(operand_src), get_register_number(operand_dst), NULL, NULL); /* encode param */
                 /* push instruction to IC data */
                 add_line_to_ic(encoded_operands, instruction, label, 2, 1, line_number, operand_src_type, operand_dst_type);
-                break;
+                return;
             }
+
+            if (operand_src_type == 1) {
+                encoded_operands[0] = encode_operand(operand_src_type, -1, -1, 0, -1, -1, NULL, operand_src); /* encode param */
+            }
+            else if (operand_src_type == 3) {
+                encoded_operands[0] = DEFAULT_BINARY;
+            }
+            else if (operand_src_type == 5) {
+                encoded_operands[0] = encode_operand(operand_src_type, -1, -1, 0, get_register_number(operand_src), -1, NULL, NULL); /* encode param */
+            }
+
             /* check dest operand */
-            else if (strcmp("cmp", operand_dst) != 0) { /* handle all cases that aren't "cmp" */
+            if (strcmp("cmp", operand_dst) != 0) { /* handle all cases that aren't "cmp" */
                 if (operand_dst_type == 1) {
                     handleError("invalid type of operand", line_number);
                     return;
                 }
-                else {
-                    /* replace dest operand with binary represintation if not "cmp" case */
-                    encoded_operands[1] = encode_operand(operand_dst);
-                }
             }
-            else {
-                /* replace dest operand with binary represintation */
-                encoded_operands[1] = encode_operand(operand_dst);
+            /* replace dest operand with binary represintation */
+            if (operand_dst_type == 1) {
+            encoded_operands[1] = encode_operand(-1, -1, operand_dst_type, 0, -1, -1, NULL, operand_dst); /* encode param */
+            }
+            else if (operand_dst_type == 3) {
+                encoded_operands[1] = DEFAULT_BINARY;
+            }
+            else if (operand_dst_type == 5) {
+                encoded_operands[1] = encode_operand(-1, -1, operand_dst_type, 0, -1, get_register_number(operand_dst), NULL, NULL); /* encode param */
             }
             /* push instruction to IC data */
             add_line_to_ic(encoded_operands, instruction, label, 3, 2, line_number, operand_src_type, operand_dst_type);
@@ -393,6 +383,10 @@ int check_if_valid_register(char* reg, int line_number) {
 
     handleError("invalid register", line_number);
     return 0;
+}
+
+int get_register_number(char* reg) {
+    return *(reg+2) - 48;
 }
 
 int type_of_operand(char* operand, int line_number) {
@@ -440,13 +434,12 @@ void handle_command(char * line, char* label, int line_number) {
         printf("Directive: %s\n", first_word);
         handle_directive(first_word, line, label, line_number);
     } 
-    else if (isInstruction(first_word)) { /* If the word is an instruction */
+    else if (isInstruction(first_word) != -1) { /* If the word is an instruction */
         printf("Instruction: %s\n", first_word);
         handle_instruction(first_word, line, label, line_number);
     } 
     else if (can_word_be_valid_label(first_word, line_number)) { /* if the word is a label */
-        encoded_label = encode_operand(first_word);
-        address = push_ic(NULL, encoded_label, 0, NULL, line_number);
+        address = push_single_ic(DEFAULT_BINARY);
         add_to_labels_black_list(first_word, line_number, address);
     }
     else  { /* If the second word is not a valid */

@@ -19,7 +19,7 @@ char *split_bin(char *);
 
 char *analize_bin(char *);
 
-char *write_binary_line(*temp_binary);
+char *write_binary_line(char* temp_binary);
 
 char *create_file_name(char *original, int format);
 
@@ -39,7 +39,7 @@ int is_word_a_valid_label_declaration(char* word, int line_number);
 
 char* isDirective(char* line);
 
-char* isInstruction(char* line);
+int isInstruction(char* line);
 
 void handleError(char* err, int line_number);
 
@@ -57,7 +57,11 @@ int type_of_operand(char* operand, int line_number);
 
 void move_line_ptr_to_next_word(char* word, char* line);
 
-char* encode_operand(char* operand);
+/* instruction: src_type , dst_type , instruction = num of instruction , ARE, src_reg && dst_reg = -1 . address = NULL */
+/* register: src_type = will be 1/3/5 or -1 if it's a dst register. dst_type = same. instruction = will be -1. ARE . src_reg && dst_reg = number of register. will be -1 if only one register. address = NULL */
+/* label: address = address of label , ARE. all the rest = -1 */
+/* number: number , ARE. all the rest = -1 */
+char* encode_operand(int src_type, int insruction, int dst_type, int ARE, int src_reg, int dst_reg, char* address, char* number);
 
 char* encode_two_regs(char* reg_src, char* reg_dst);
 
@@ -70,5 +74,7 @@ int check_if_valid_register(char* reg, int line_number);
 void add_line_to_ic(char** encoded_operands, char* instruction, char* label, int num_of_lines, int operands_num, int line_number, int src_type, int dst_type);
 
 void handle_command(char * line, char* label, int line_number);
+
+int get_register_number(char* reg);
 
 #endif

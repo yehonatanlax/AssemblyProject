@@ -22,18 +22,21 @@ void print_labels(){
 /* add label to labels table */
 void add_label(char* label, int num_of_lines, char** address, int line_number, int type) {
     /*int size;*/
-    if (!is_label_exist(label)) {
+    Label* label_obj = getLabel(label);
+    if (label_obj == NULL) {
         /* Allocating new place for the new label */
         labels = realloc(labels, (num_labels + 1) * sizeof(Label));
         labels[num_labels].address = address;
         labels[num_labels].params_counter = num_of_lines;
         labels[num_labels].type = type;
         labels[num_labels].name = malloc(strlen(label) + 1);
-        /*size = strlen(label);*/
         strcpy((labels)[num_labels].name, label);
-        /*(labels)[num_labels].name[size-1] = '\0'; copy label without colon */
         num_labels++;
-    } else {
+    } 
+    else if (label_obj->type == 0 && label_obj->address == NULL) { /* handle entry label */
+        label_obj->address = address;
+    }
+    else {
         handleError("The name of this label already exists in labels table", line_number);
     }
 }
@@ -90,11 +93,23 @@ void remove_label_from_black_list(char* label) {
 void handle_entry_label(char* directive, char* line, int line_number){
     char* name_of_entry = NULL;
     char** address;
+    Label* label = NULL;
     move_line_ptr_to_next_word(directive, line);
     name_of_entry = getFirstWord(line);
     if (is_valid_entry(name_of_entry, line, line_number)) {
-        address = push_single_ic(name_of_entry);
-        add_label(name_of_entry, 1, address, line_number, 0);
+        /*address = push_single_ic(name_of_entry);*/
+        label = getLabel(name_of_entry);
+        if (label != NULL) {
+            if (label->type == 0) {
+                handleError("entry already declared", line_number);
+            }
+            else if (label->type) {
+                label->type = 0;
+            }
+        }
+        else {   
+            add_label(name_of_entry, 1, NULL, line_number, 0);
+        }
     }
 
     free(name_of_entry);
@@ -110,7 +125,7 @@ int is_valid_entry( char* entry_word, char* line, int line_number) {
     else if (isDirective(entry_word)){
         handleError("invalid name. name of entry is like a directve", line_number);
     }
-    else if (isInstruction(entry_word)){
+    else if (isInstruction(entry_word) != -1){
         handleError("invalid name. name of entry is like a instruction", line_number);
     }
     else if (!can_word_be_valid_label(entry_word, line_number)) {
@@ -137,6 +152,7 @@ int is_label_exist(char* label) {
     int i;
     int size;
     char* new_str;
+    Label* label_obj = NULL;
     size = strlen(label);
     new_str = (char*)calloc(size,sizeof(char));
     if (label[size-1] == ':'){
@@ -144,17 +160,9 @@ int is_label_exist(char* label) {
         strcpy(label,new_str);
     }
 
-    /* if labels is not empty */
-    if (labels != NULL) {
-        /* go over all labels in labels data */
-        for (i = 0; i < num_labels; i++) {
-            if (strcmp(label, labels[i].name) == 0) {
-                return 1;
-            }
-        }
-    }
     free(new_str);
-    return 0;
+    label_obj = getLabel(label);
+    return label_obj != NULL && label_obj->address != NULL; 
 }
 
 /* checks if label exists in labels table */
@@ -194,7 +202,7 @@ void print_all_black_list_labels_left() {
 Label* getLabel(char* label) {
     int i;
     /* if labels is empty */
-    if (!labels) {
+    if (labels != NULL) {
         for (i = 0; i < num_labels; i++) {
             if (strcmp(label, labels[i].name) == 0) {
                 return &labels[i];

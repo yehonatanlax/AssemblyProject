@@ -15,14 +15,5 @@ char* preprocessor(const char* filename, int line_number);
 char* replace_macro_content(const char* filepath);
 
 void add_macro(char* name, char* content, int line_number);
-/*void withoutSpacesBeforeArray(char *str);*/
-
-
-
-
-
-
-
-
 
 #endif

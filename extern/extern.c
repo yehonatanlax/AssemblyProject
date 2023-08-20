@@ -52,7 +52,7 @@ int is_valid_extern( char* extern_word, char* line, int line_number) {
     else if (isDirective(extern_word)){
         handleError("invalid name. name of extern is like a directve", line_number);
     }
-    else if (isInstruction(extern_word)){
+    else if (isInstruction(extern_word) != -1){
         handleError("invalid name. name of extern is like a instruction", line_number);
     }
     else if (!can_word_be_valid_label(extern_word, line_number)) {

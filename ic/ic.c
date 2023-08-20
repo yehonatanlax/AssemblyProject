@@ -15,7 +15,7 @@ char** push_ic(char** operands, char* instruction, int operands_num, int* op_typ
   char** op_address;
   int i;
   /* save address of instruction in IC data in case of label  */
-  address = push_single_ic(encode_operand(instruction));
+  address = push_single_ic(encode_operand(op_types[0], isInstruction(instruction), op_types[1], 0, -1, -1, NULL, NULL));
   /* push all operands */
   for(i = 0; i < operands_num; i++) {
     op_address = push_single_ic(operands[i]);
@@ -28,14 +28,14 @@ char** push_ic(char** operands, char* instruction, int operands_num, int* op_typ
 }
 
 /* push instruction / operand to IC data */
-char** push_single_ic(char* ic) {
+char** push_single_ic(char* encoded_ic) {
   /* allocate new space for the pointer */
   IC_data.ic_data = realloc(IC_data.ic_data, (IC_data.ic_counter + 1) * sizeof(char**));
   /* allocate new space for the data itself */  
-  *(IC_data.ic_data + IC_data.ic_counter) = malloc(strlen(ic) + 1);
-  strcpy(IC_data.ic_data[IC_data.ic_counter], ic);
+  *(IC_data.ic_data + IC_data.ic_counter) = malloc(strlen(encoded_ic) + 1);
+  strcpy(IC_data.ic_data[IC_data.ic_counter], encoded_ic);
   IC_data.ic_counter++; 
-  printf("Pushed IC: %s\n", ic);
+  printf("Pushed IC: %s\n", encoded_ic);
   /* return address of data in IC data table */
   return &IC_data.ic_data[IC_data.ic_counter - 1];
 }

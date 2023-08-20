@@ -2,8 +2,13 @@
 #include <string.h>
 #include <math.h>
 #include <stdlib.h>
-#include "../preprocessor/macro.h"
-#include "../first_pass/first_pass.h"
+#include "functions/functions.h"
+#include "labels/labels.h"
+#include "dc/dc.h"
+#include "ic/ic.h"
+#include "preprocessor/macro.h"
+#include "extern/extern.h"
+#include "first_pass/first_pass.h"
 
 
 int main(int argc, char * argv[]) {
@@ -19,11 +24,14 @@ int main(int argc, char * argv[]) {
     exit(1);
   }
   /* TODO: FOR ALL THE FILES */
-  filepath = argv[1];
-  strcat(filepath, ".as");
-  filepath = (char*)preprocessor(filepath, line_number);
-  line_number = 0;
-  analyzeFile(filepath,&ic, &dc);
+  for(i = 1; i < argc; i++) {
+    filepath = argv[i];
+    printf("filepathhhhhhhh:%s\n",filepath);
+    strcat(filepath, ".as");
+    filepath = (char*)preprocessor(filepath, line_number);
+    line_number = 0;
+    analyzeFile(filepath,&ic, &dc);
+  }
 
   return 0;
 }
