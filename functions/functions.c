@@ -125,7 +125,7 @@ int isLineEmptyOrComment(char* line) {
 int can_word_be_valid_label(char* word, int line_number) {
     int i;
     int size = strlen(word);
-    if (size > MAX_LABEL_LENGTH + 1){/*If the word to much long */
+    if (size > MAX_LABEL_LENGTH + 1){/* If the word to much long */
         return 0;
     }
     if (!(isalpha(*word))){/*If the first char is not letter*/
@@ -133,7 +133,7 @@ int can_word_be_valid_label(char* word, int line_number) {
     }
     /* check if the word is a saved instruction */
     if (isInstruction(word) != -1) {
-        handleError("you can't use saved word as a label", line_number);
+        handleError("you can't use a saved word as a label", line_number);
         return 0;
     }
     for (i = 0; i < size; i++){ /*Check if all characters are valid*/
