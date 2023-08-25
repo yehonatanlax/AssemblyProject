@@ -18,4 +18,10 @@ int is_extern_exist(char* name);
 
 int is_valid_extern( char* extern_word, char* line, int line_number);
 
+void get_externs();
+
+void free_memory_extern();
+
+void initialize_extern();
+
 #endif

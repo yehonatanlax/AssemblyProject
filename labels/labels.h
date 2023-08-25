@@ -3,7 +3,7 @@
 
 typedef struct {
     char* name;
-    char** address;
+    int address;
     int params_counter;
     int type;
 } Label;
@@ -11,13 +11,14 @@ typedef struct {
 typedef struct {
     int line_number;
     int instances_num;
-    char** instances;
+    int* instances;
     char* name;
+    int num_line;
 } Blacked_Label;
 
-void add_label(char* label, int num_of_lines, char** address, int line_number, int type);
+void add_label(char* label, int num_of_lines, int address, int line_number, int type);
 
-void add_to_labels_black_list(char* label, int line_number, char** address);
+void add_to_labels_black_list(char* label, int line_number, int address);
 
 void remove_label_from_black_list(char* label);
 
@@ -27,8 +28,6 @@ Label* getLabel(char* label);
 
 int is_black_list_empty();
 
-void print_all_black_list_labels_left();
-
 int is_valid_entry( char* entry_word, char* line, int line_number);
 
 void handle_entry_label(char* directive, char* line, int line_number);
@@ -36,5 +35,11 @@ void handle_entry_label(char* directive, char* line, int line_number);
 Blacked_Label* is_black_label_exist(char* label);
 
 void print_labels();
+
+void get_black_list();
+
+void free_memory_label();
+
+void initialize_labels();
 
 #endif

@@ -9,14 +9,13 @@
 #include "../preprocessor/macro.h"
 #include "../extern/extern.h"
 
-
-
+int line_number = 0;
 
 void analyzeFile(char *filename, int* ic, int* dc) {
+  line_number = 0;
   FILE *fileReed; /*ptr to path of reed file*/
   char line[MAX_LINE_LENGTH];
   char *firstWord;
-  int line_number = 0;
   fileReed = fopen(filename, "r");
   /* check for errors */
   if (fileReed == NULL) {
@@ -45,7 +44,6 @@ void analyzeFile(char *filename, int* ic, int* dc) {
     }
   }
 
-  print_all_IC();
   print_labels();
 }
 

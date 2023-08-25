@@ -1,13 +1,16 @@
-MAIN:   mov S1.1,LENGTH
-        add r2,STR
-LOOP:   jmp END
-        prn #-5
-        sub   rl, r4
-        inc   K
-        mov S1.2,r3
-        bne LOOP
-END:    hlt
-STR:    .string "abcdef"
-LENGTH: .data  6,-9,15
-K:      .data 22
-S1:     .struct 8, "ab"
+.entry LENGTH
+.extern W
+MAIN:  mov @r3,LENGTH
+LOOP: jmp L1
+prn -5
+bne W
+sub @r1, @r4
+bne L3
+L1: inc K
+.entry LOOP
+jmp W
+END:stop
+STR: .string "abcdef"
+LENGTH: .data 6,-9,15
+K: .data 22
+.extern L3

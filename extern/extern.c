@@ -69,3 +69,20 @@ int is_valid_extern( char* extern_word, char* line, int line_number) {
     free(check_more_param);
     return 0;
 }
+
+void get_externs(){
+    int i;
+    printf("============externs=================\n");
+    for (i = 0; i < num_externs; i++) {
+        printf("extern name: %s\n",externs[i].name);
+    }
+}
+
+void free_memory_extern(){
+    free(externs);
+}
+
+void initialize_extern() {
+    externs = NULL; /*Array pointers of externs*/
+    num_externs = 0;
+}

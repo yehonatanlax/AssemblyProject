@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/my_program",
-            "args": ["${workspaceFolder}/example_macro"],
+            "args": ["${workspaceFolder}/example_macro", "${workspaceFolder}/macro_test"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],

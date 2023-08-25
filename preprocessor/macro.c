@@ -66,7 +66,10 @@ char* preprocessor(const char* filename, int line_number) {
     free(name);
     free(content);
     fclose(file);
-
+    /* TODO: DELETE FOR */
+    for (i = 0; i<num_macros; i++){
+        printf("name of macro: %s\n",macros[i].name);
+    }
     return replace_macro_content(filename);
 }
 
@@ -118,8 +121,8 @@ char* replace_macro_content(const char* filepath) {
             inside_macro = 1;
             continue;
         }
-        else if (!(strcmp(isMacro,"null") == 0)) {
-        printf("in else if");
+        else if (strcmp(isMacro,"null") != 0) {
+            printf("in else if\n");
             for (i = 0; i < num_macros; i++){
                 if (strcmp(isMacro, (macros)[i].name) == 0){
                     printf("macro content: %s\n",(macros)[i].content);
@@ -163,25 +166,34 @@ void add_macro(char* name, char* content, int line_number) {
 }
 
 /* This func checks if in current line have call to macro */
-char* checkIfItsMacro(char * line){
+char* checkIfItsMacro(char * word){
     int i,size;
     char * str = (char*)malloc(MAX_LINE_LENGTH * sizeof(char));
     if (str == NULL) {
         printf("Memory allocation failed in checkIfItsMacro.\n");
         return NULL;
     }
-
+    if (num_macros == 0) {
+        strcpy(str,"null");
+    }
     for (i = 0; i < num_macros; i++) {
         /*Know where the end-of-string character is,
          to remove it because it interferes with the comparison*/
-        size = strcspn(line, "\n");
-        if (strncmp(line, (macros)[i].name,size) == 0){
+        size = strcspn(word, "\n");
+        if (strncmp(word, (macros)[i].name,size) == 0){
             strcpy(str,(macros)[i].name) ;
             break;
         }
-    }
     strcpy(str,"null");/*If don't have match return null*/
+    }
     return str;
 }
 
+void free_memory_macro() {
+    free(macros);
+}
 
+void initialize_macro() {
+    macros = NULL; /*Array pointers of macros*/
+    int num_macros = 0;
+}

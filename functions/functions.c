@@ -16,21 +16,30 @@
 #define MAX_LABEL_LENGTH 31
 #define DIRECTIVES_NUM 4
 #define INSTRUCTIONS_NUM 16
-#define DEFAULT_BINARY "000000000000"
 
+int flag_err = 0;
+
+char* DEFAULT_BINARY = "000000000000";
 const char* directives[] = {".data", ".string", ".entry", ".extern"}; 
 const char* ass_comm[] = {"mov","cmp", "add", "sub", "lea",
                           "not", "clr", "inc", "dec", "jmp", "bne", "red",
                           "prn", "jsr", "rts", "stop"};
-
 /*======================================================================*/
 
 
 /*takes the half binary and convert it to a b64 sign*/
-char bin_to_b64_sign(char *bin){
-  int dec = bin_to_dec(bin);
-  char sign = dec_to_b64(dec);
-  return sign;
+char *bin_to_b64_sign(char *first_part, char *second_part){
+int dec1, dec2;
+char sign1, sign2;
+char *double_sign = malloc(2*sizeof(char));
+  dec1 = bin_to_dec(first_part);
+  sign1 = dec_to_b64(dec1);
+  dec2 = bin_to_dec(second_part);
+  sign2 = dec_to_b64(dec2);
+  double_sign[0] = sign1;
+  double_sign[1] = sign2;
+
+  return double_sign;
 }
 
 /*convert binary number to a decimal number*/
@@ -41,7 +50,7 @@ int bin_to_dec(char* dec){/*TODO add edge cases!!!!*/
   for(i = strlen(dec)-1; i >= 0 ; i--){
     
     if (dec[i] == '1')
-     /* sum += pow(2, j);*/
+      sum += pow(2, j);
     j++;
   }
   return sum;
@@ -53,30 +62,27 @@ char dec_to_b64(int num){
   return base64[num];
 }
 
-  /* This function creates a file name by appending suitable extension (by type) to the original string */
-char *create_file_name(char *original, int format){
-    /*char *name = (char *) malloc(strlen(original) + SUFFIX);
-    if(name == NULL)
-    {
-        fprintf(stderr, "Dynamic allocation error.");
-        exit(0);
+char *split_bin_to_first_part(char *bin_num){
+    char* first_part = malloc(7*sizeof(char));
+    int i;
+    /*writing the first part*/
+    for(i=0; i < 6;i++){
+        first_part[i] = bin_num[i];
     }
-
-    strcpy(name, original);*/
-
-    /* Concatenating the required suffix */
-
-    switch (format)
-    {
-        /*case AM:
-            strcat(name, ".as");
-            break;*/
-/*add other options*/
-
-    }
-    return "name";
+    first_part[6] = 0;
+    return first_part;
 }
 
+char *split_bin_to_second_part(char *bin_num){
+    char* second_part = malloc(7*sizeof(char));
+    int i;
+    /*writing the second part*/
+    for(i=0; i < 6;i++){
+        second_part[i] = bin_num[i+6];
+    }
+    second_part[6] = '\0';
+    return second_part;
+}
 
 /* remove spaces before content,
     This func for char[].
@@ -186,9 +192,13 @@ void move_line_ptr_to_next_word(char* word, char* line) {
 }
 
 int remove_comma(char* line, int line_number) {
+    int i,j;
     removeSpacesBefore(line); /* remove spaces before expected comma */
     if (*line == ',') {
-        strcpy(line, line+1);
+        for (i = 1, j = 0; i < strlen(line); i++, j++) {
+            line[j] = line[i];
+        }
+        line[j] = '\0';
     }
     else {
         handleError("missing comma", line_number);
@@ -204,16 +214,11 @@ int remove_comma(char* line, int line_number) {
 }
 
 
-char* encode_operand(int src_type, int insruction, int dst_type, int ARE, int src_reg, int dst_reg, char* address, char* number) {
+/*char* encode_binary(int src_type, int insruction, int dst_type, int ARE, int src_reg, int dst_reg, char* address, char* number, int line_number) {
     printf("--- operand: src_type: %d, instruction: %d, dst_type: %d, ARE: %d, src_reg: %d, dst_reg: %d, address: %s, number: %s, \n", src_type,  insruction,  dst_type,  ARE,  src_reg,  dst_reg,  address,  number);
     return "encode";
-}
+} TODO:DELETE*/
 
-char* encode_two_regs(char* reg_src, char* reg_dst) {
-    /*printf("--- operand: %s\n", reg_src);
-    printf("--- operand: %s\n", reg_dst);*/
-    return "registers";
-}
 
 /* handle directive line */
 void handle_directive(char* instruction, char* line, char* label, int line_number) {
@@ -233,11 +238,14 @@ void handle_directive(char* instruction, char* line, char* label, int line_numbe
     }
 }
 
-void add_line_to_ic(char** encoded_operands, char* instruction, char* label, int num_of_lines, int operands_num, int line_number, int src_type, int dst_type) {
+void add_line_to_ic(char** encoded_operands, char* instruction, char* label, int num_of_lines, int operands_num, int line_number, int src_type, int dst_type, char* op_to_bl) {
     if (label == NULL || !is_label_exist(label)) { /* if label is given and already exist don't push */
-        int op_types[2] = {src_type, dst_type};
+        int address;
+        int op_types[2];
+        op_types[0] = src_type;
+        op_types[1] = dst_type;
         /* push instruction to IC data and save address in case of label */
-        char** address = push_ic(encoded_operands, instruction, operands_num, op_types, line_number);
+        address = push_ic(encoded_operands, instruction, operands_num, op_types, line_number, op_to_bl);
         /* if a label was written in this line, save the label with the current address */
         if (label) {
             add_label(label, num_of_lines, address, line_number, 1);
@@ -258,7 +266,7 @@ void handle_instruction(char* instruction, char* line, char* label, int line_num
     switch (instruction_params_num(instruction)) { /* handle instruction by number of params */
         case 0:
             /* push instruction to IC data */
-            add_line_to_ic(encoded_operands, instruction, label, 1, 0, line_number, 0, 0);
+            add_line_to_ic(encoded_operands, instruction, label, 1, 0, line_number, -1, -1, NULL);
             break;
         case 1:
             operand_dst = getFirstWord(line);
@@ -272,17 +280,17 @@ void handle_instruction(char* instruction, char* line, char* label, int line_num
                     handleError("type of operand is invalid in case 1", line_number);
                     return;
                 }
-                encoded_operands[0] = encode_operand(-1, -1, operand_dst_type, 0, -1, -1, NULL, operand_dst); /* encode param */
+                encoded_operands[0] = encode_binary(-1, -1, -1, 0, -1, -1, -1, operand_dst,line_number); /* encode param */
             }
             else if (operand_dst_type == 3) {
                 encoded_operands[0] = DEFAULT_BINARY;
             }
             else if (operand_dst_type == 5) {
-                encoded_operands[0] = encode_operand(-1, -1, operand_dst_type, 0, -1, get_register_number(operand_dst), NULL, NULL); /* encode param */
+                encoded_operands[0] = encode_binary(-1, -1, -1, 0, -1, get_register_number(operand_dst), -1, NULL, line_number); /* encode param */
             }
 
             /* push instruction to IC data */
-            add_line_to_ic(encoded_operands, instruction, label, 2, 1, line_number, operand_dst_type, 0);
+            add_line_to_ic(encoded_operands, instruction, label, 2, 1, line_number, operand_dst_type ,-1, operand_dst);
             break;
         case 2:
             operand_src = getFirstWord(line);
@@ -311,20 +319,20 @@ void handle_instruction(char* instruction, char* line, char* label, int line_num
             /* check if both are registers */
             if (operand_src_type == 5 && operand_dst_type == 5) {
                 /* replace registers operands to one binary represintation */
-                encoded_operands[0] = encode_operand(operand_src_type, -1, operand_dst_type, 0, get_register_number(operand_src), get_register_number(operand_dst), NULL, NULL); /* encode param */
+                encoded_operands[0] = encode_binary(operand_src_type, -1, operand_dst_type, 0, get_register_number(operand_src), get_register_number(operand_dst), -1, NULL, line_number); /* encode param */
                 /* push instruction to IC data */
-                add_line_to_ic(encoded_operands, instruction, label, 2, 1, line_number, operand_src_type, operand_dst_type);
+                add_line_to_ic(encoded_operands, instruction, label, 2, 1, line_number, operand_src_type, operand_dst_type, operand_dst);
                 return;
             }
 
             if (operand_src_type == 1) {
-                encoded_operands[0] = encode_operand(operand_src_type, -1, -1, 0, -1, -1, NULL, operand_src); /* encode param */
+                encoded_operands[0] = encode_binary(operand_src_type, -1, -1, 0, -1, -1, -1, operand_src, line_number); /* encode param */
             }
             else if (operand_src_type == 3) {
                 encoded_operands[0] = DEFAULT_BINARY;
             }
             else if (operand_src_type == 5) {
-                encoded_operands[0] = encode_operand(operand_src_type, -1, -1, 0, get_register_number(operand_src), -1, NULL, NULL); /* encode param */
+                encoded_operands[0] = encode_binary(operand_src_type, -1, -1, 0, get_register_number(operand_src), -1, -1, NULL, line_number); /* encode param */
             }
 
             /* check dest operand */
@@ -336,16 +344,16 @@ void handle_instruction(char* instruction, char* line, char* label, int line_num
             }
             /* replace dest operand with binary represintation */
             if (operand_dst_type == 1) {
-            encoded_operands[1] = encode_operand(-1, -1, operand_dst_type, 0, -1, -1, NULL, operand_dst); /* encode param */
+            encoded_operands[1] = encode_binary(-1, -1, operand_dst_type, 0, -1, -1, -1, operand_dst, line_number); /* encode param */
             }
             else if (operand_dst_type == 3) {
                 encoded_operands[1] = DEFAULT_BINARY;
             }
             else if (operand_dst_type == 5) {
-                encoded_operands[1] = encode_operand(-1, -1, operand_dst_type, 0, -1, get_register_number(operand_dst), NULL, NULL); /* encode param */
+                encoded_operands[1] = encode_binary(-1, -1, operand_dst_type, 0, -1, get_register_number(operand_dst), -1, NULL, line_number); /* encode param */
             }
             /* push instruction to IC data */
-            add_line_to_ic(encoded_operands, instruction, label, 3, 2, line_number, operand_src_type, operand_dst_type);
+            add_line_to_ic(encoded_operands, instruction, label, 3, 2, line_number, operand_src_type, operand_dst_type, operand_dst);
             break;
     }
 
@@ -422,13 +430,14 @@ int instruction_params_num(char* instruction){
 }
 
 void handleError(char* err, int line_number) {
+    flag_err = 1;
     printf("Line %d: %s\n", line_number, err);
 }
 
 void handle_command(char * line, char* label, int line_number) {
     char* first_word = (char*)malloc(MAX_LINE_LENGTH*sizeof(char));
-    char* encoded_label = (char*)malloc(MAX_LINE_LENGTH*sizeof(char));
-    char** address;
+    /*char* encoded_label = (char*)malloc(MAX_LINE_LENGTH*sizeof(char))  TO DELETE;*/
+    int address;
     first_word = getFirstWord(line);
     if (isDirective(first_word)) { /* If the word is a directive */
         printf("Directive: %s\n", first_word);
@@ -457,6 +466,11 @@ char* getFirstWord(char * str){
         return ptr;
     }
     while (!(isspace(str[i])) && str[i] != ',' && str[i] != '\0') {
+        if (str[i] == ':') {
+            ptr[i] = str[i];
+            i++;
+            break;
+        }
         ptr[i] = str[i];
         i++;
     }
@@ -481,6 +495,10 @@ int count_word(char* line){
         }
     }
     return num_word;
+}
+
+void clear_error_flag() {
+    flag_err = 0;
 }
 
 

@@ -14,13 +14,15 @@ Blacked_Label* labels_black_list = NULL;
 
 void print_labels(){
     int i;
+    printf("================ all the label ==========\n");
+    printf("counter of label: %d\n",num_labels);
     for (i = 0; i < num_labels; i++){
         printf("label name: %s - type: %d\n",labels[i].name, labels[i].type);
     }
 }
 
 /* add label to labels table */
-void add_label(char* label, int num_of_lines, char** address, int line_number, int type) {
+void add_label(char* label, int num_of_lines, int address, int line_number, int type) {
     /*int size;*/
     Label* label_obj = getLabel(label);
     if (label_obj == NULL) {
@@ -30,11 +32,16 @@ void add_label(char* label, int num_of_lines, char** address, int line_number, i
         labels[num_labels].params_counter = num_of_lines;
         labels[num_labels].type = type;
         labels[num_labels].name = malloc(strlen(label) + 1);
-        strcpy((labels)[num_labels].name, label);
+        strcpy(labels[num_labels].name, label);
         num_labels++;
+        /*print_labels();*/
     } 
-    else if (label_obj->type == 0 && label_obj->address == NULL) { /* handle entry label */
+    else if (label_obj->type == 0 && label_obj->address == -1) { /* handle entry label */
         label_obj->address = address;
+    }
+    else if (label_obj->type == 2 && label_obj->address == -1) { /* handle entry label */
+        label_obj->address = address;
+        label_obj->type = type;
     }
     else {
         handleError("The name of this label already exists in labels table", line_number);
@@ -42,8 +49,7 @@ void add_label(char* label, int num_of_lines, char** address, int line_number, i
 }
 
 /* if label doesn't exist yet, add it to black list which will be checked at the end */
-void add_to_labels_black_list(char* label, int line_number, char** address) {
-    int i;
+void add_to_labels_black_list(char* label, int line_number, int address) {
     Blacked_Label* label_obj = is_black_label_exist(label);
     if (labels_black_list == NULL) {
         labels_black_list = malloc(sizeof(Blacked_Label));
@@ -53,15 +59,15 @@ void add_to_labels_black_list(char* label, int line_number, char** address) {
         labels_black_list[black_list_num].line_number = line_number;
         labels_black_list[black_list_num].name = malloc(strlen(label) + 1);
         labels_black_list[black_list_num].instances_num = 1;
-        labels_black_list[black_list_num].instances = malloc(sizeof(char**));
-        labels_black_list[black_list_num].instances[0] = realloc(labels_black_list[black_list_num].instances, sizeof(char*));
-        labels_black_list[black_list_num].instances[labels_black_list[black_list_num].instances_num - 1] = *address;
+        labels_black_list[black_list_num].instances = malloc(sizeof(int*));
+        labels_black_list[black_list_num].instances[0] = address;
+        labels_black_list[black_list_num].line_number = line_number;
         strcpy(labels_black_list[black_list_num].name, label);
         black_list_num++;
     }
     else {
-        label_obj->instances = realloc(label_obj->instances, sizeof(char*)*(label_obj->instances_num + 1));
-        label_obj->instances[label_obj->instances_num] = *address;
+        label_obj->instances = realloc(label_obj->instances, sizeof(int*)*(label_obj->instances_num + 1));
+        label_obj->instances[label_obj->instances_num] = address;
         label_obj->instances_num++;
     }
 }
@@ -92,23 +98,23 @@ void remove_label_from_black_list(char* label) {
 
 void handle_entry_label(char* directive, char* line, int line_number){
     char* name_of_entry = NULL;
-    char** address;
+    /*char** address; TO DELETE*/
     Label* label = NULL;
     move_line_ptr_to_next_word(directive, line);
     name_of_entry = getFirstWord(line);
     if (is_valid_entry(name_of_entry, line, line_number)) {
-        /*address = push_single_ic(name_of_entry);*/
+        /*address = push_single_ic(name_of_entry); TO DELETE*/
         label = getLabel(name_of_entry);
         if (label != NULL) {
             if (label->type == 0) {
                 handleError("entry already declared", line_number);
             }
-            else if (label->type) {
+            else if (label->type == 1) {
                 label->type = 0;
             }
         }
         else {   
-            add_label(name_of_entry, 1, NULL, line_number, 0);
+            add_label(name_of_entry, 1, -1, line_number, 0);
         }
     }
 
@@ -131,9 +137,9 @@ int is_valid_entry( char* entry_word, char* line, int line_number) {
     else if (!can_word_be_valid_label(entry_word, line_number)) {
         handleError("invalid name. invalid entry name", line_number);
     }
-    else if (is_label_exist(entry_word)){
+    /*else if (is_label_exist(entry_word)){
         handleError("invalid name. a label with the same name exists already", line_number);
-    }
+    }*/
     else {
         free(check_more_param);
         return 1;
@@ -149,7 +155,6 @@ int is_black_list_empty() {
 
 /* checks if label exists in labels table */
 int is_label_exist(char* label) {
-    int i;
     int size;
     char* new_str;
     Label* label_obj = NULL;
@@ -162,7 +167,7 @@ int is_label_exist(char* label) {
 
     free(new_str);
     label_obj = getLabel(label);
-    return label_obj != NULL && label_obj->address != NULL; 
+    return label_obj != NULL && label_obj->address != -1; 
 }
 
 /* checks if label exists in labels table */
@@ -181,23 +186,6 @@ Blacked_Label* is_black_label_exist(char* label) {
     return NULL;
 }
 
-void print_all_black_list_labels_left() {
-    int i, j;
-    /* if labels is not empty */
-    if (labels_black_list != NULL) {
-        /* go over all labels in labels data */
-        for (i = 0; i < black_list_num; i++) {
-            char label_error_msg[MAX_LINE_LENGTH*2] = "label does not exist - ";
-            strcat(label_error_msg, labels_black_list[i].name);
-            handleError(label_error_msg, labels_black_list[i].line_number);
-            for (j = 0; j < labels_black_list[i].instances_num; j++) {
-                printf("            %p : %s\n", labels_black_list[i].instances[j], labels_black_list[i].instances[j]);
-            }
-            
-        }
-    }
-}
-
 /* returns label data */
 Label* getLabel(char* label) {
     int i;
@@ -211,4 +199,25 @@ Label* getLabel(char* label) {
     }
 
     return NULL;
+}
+
+void get_black_list() {
+    int i;
+    printf("========black list=========\n");
+    printf("counter of black list: %d\n", black_list_num);
+    for (i = 0; i < black_list_num; i++) {
+        printf("black list: %s\n",labels_black_list[i].name);
+    }
+}
+
+void free_memory_label() {
+    free(labels);
+    free(labels_black_list);
+}
+
+void initialize_labels() {
+    labels = NULL;
+    num_labels = 0;
+    black_list_num = 0;
+    labels_black_list = NULL;
 }
