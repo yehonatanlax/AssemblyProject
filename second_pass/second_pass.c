@@ -1,6 +1,7 @@
 #include "second_pass.h"
 #include "../dc/dc.h"
 #include "../extern/extern.h"
+#include "../encode/encode.h"
 #include "../functions/functions.h"
 #include "../ic/ic.h"
 #include "../labels/labels.h"
@@ -29,21 +30,14 @@ extern int dc;
 extern int flag_err;
 extern int line_number;
 
+/* */
 void second_pass(char* file_name) {
-    int i;
-    int j;
-    int z;
-    int x;
-    int y;
-    int t;
-    int flag;
-    int q;
-    int w;
-    int u;
+    int i,j,z,x,y,t,q,w,u,flag;
     int address, counter;
     FILE* entry_file = NULL;
     FILE* extern_file = NULL;
-    /* chaeck if have to much data */
+    
+    /* check if have to much data */
     if ((IC_data.ic_counter + DC_data.dc_counter) > 923) {
         flag_err = 1;
     }
@@ -126,7 +120,6 @@ void second_pass(char* file_name) {
             }
         }
         if (!flag) {
-            printf("name of bl: %s line_num: %d\n", labels_black_list[i].name, labels_black_list[i].line_number);
             handleError("undefined label or operand", labels_black_list[i].line_number);
         }
     }
@@ -193,19 +186,19 @@ void add_to_file(FILE* file, char* name_label, int address) {
 void remove_files(char* name) {
     char* temp_name_ent;
     char* temp_name_ext;
-    char* temp_name_obj;
+    char* temp_name_ob;
     int size = strlen(name);
     temp_name_ent = malloc(size*sizeof(char)+4);
     temp_name_ext = malloc(size*sizeof(char)+4);
-    temp_name_obj = malloc(size*sizeof(char)+4);
+    temp_name_ob = malloc(size*sizeof(char)+4);
     strcpy(temp_name_ent, name);
     strcpy(temp_name_ext, name);
-    strcpy(temp_name_obj, name);
+    strcpy(temp_name_ob, name);
     strcat(temp_name_ent, ".ent");
     strcat(temp_name_ext, ".ext");
-    strcat(temp_name_obj, ".obj");
+    strcat(temp_name_ob, ".ob");
     remove(temp_name_ent);
     remove(temp_name_ext);
-    remove(temp_name_obj);
+    remove(temp_name_ob);
 }
 

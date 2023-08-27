@@ -10,8 +10,6 @@ int push_ic(char** operands, char* instruction, int operands_num, int* op_types,
 
 int push_single_ic(char* ic);
 
-void print_all_IC();
-
 void free_memory_ic();
 
 void initialize_ic();

@@ -7,23 +7,16 @@
 #include "../extern/extern.h"
 #include "../ic/ic.h"
 
+/* Labels Table */
 Label* labels = NULL;
 int num_labels = 0;
-int black_list_num = 0;
-Blacked_Label* labels_black_list = NULL;
 
-void print_labels(){
-    int i;
-    printf("================ all the label ==========\n");
-    printf("counter of label: %d\n",num_labels);
-    for (i = 0; i < num_labels; i++){
-        printf("label name: %s - type: %d\n",labels[i].name, labels[i].type);
-    }
-}
+/* Black List Table - for labels in use in first pass */
+Blacked_Label* labels_black_list = NULL;
+int black_list_num = 0;
 
 /* add label to labels table */
 void add_label(char* label, int num_of_lines, int address, int line_number, int type) {
-    /*int size;*/
     Label* label_obj = getLabel(label);
     if (label_obj == NULL) {
         /* Allocating new place for the new label */
@@ -34,14 +27,13 @@ void add_label(char* label, int num_of_lines, int address, int line_number, int 
         labels[num_labels].name = malloc(strlen(label) + 1);
         strcpy(labels[num_labels].name, label);
         num_labels++;
-        /*print_labels();*/
     } 
     else if (label_obj->type == 0 && label_obj->address == -1) { /* handle entry label */
         label_obj->address = address;
     }
-    else if (label_obj->type == 2 && label_obj->address == -1) { /* handle entry label */
+    else if (label_obj->type == 2 && label_obj->address == -1) { /* handle dc label */
         label_obj->address = address;
-        label_obj->type = type;
+        label_obj->type = type; 
     }
     else {
         handleError("The name of this label already exists in labels table", line_number);
@@ -72,6 +64,7 @@ void add_to_labels_black_list(char* label, int line_number, int address) {
     }
 }
 
+/* remove label from black list */
 void remove_label_from_black_list(char* label) {
     int i;
     int size = strlen(label);
@@ -96,14 +89,11 @@ void remove_label_from_black_list(char* label) {
     }
 }
 
+/* handle label of entry type */
 void handle_entry_label(char* directive, char* line, int line_number){
-    char* name_of_entry = NULL;
-    /*char** address; TO DELETE*/
     Label* label = NULL;
-    move_line_ptr_to_next_word(directive, line);
-    name_of_entry = getFirstWord(line);
+    char* name_of_entry = get_first_word(line);
     if (is_valid_entry(name_of_entry, line, line_number)) {
-        /*address = push_single_ic(name_of_entry); TO DELETE*/
         label = getLabel(name_of_entry);
         if (label != NULL) {
             if (label->type == 0) {
@@ -114,6 +104,7 @@ void handle_entry_label(char* directive, char* line, int line_number){
             }
         }
         else {   
+            /* add label with type = 0 (to sign that it's an entry) */
             add_label(name_of_entry, 1, -1, line_number, 0);
         }
     }
@@ -121,25 +112,23 @@ void handle_entry_label(char* directive, char* line, int line_number){
     free(name_of_entry);
 }
 
+/* check if word can be a valid entry label */
 int is_valid_entry( char* entry_word, char* line, int line_number) { 
     char* check_more_param = NULL;
     move_line_ptr_to_next_word(entry_word, line);
-    check_more_param = getFirstWord(line);
+    check_more_param = get_first_word(line);
     if (!(check_more_param[0] == '\0')) {
         handleError("too many params for entry", line_number);
     }
-    else if (isDirective(entry_word)){
+    else if (is_directive(entry_word)){
         handleError("invalid name. name of entry is like a directve", line_number);
     }
-    else if (isInstruction(entry_word) != -1){
+    else if (is_instruction(entry_word) != -1){
         handleError("invalid name. name of entry is like a instruction", line_number);
     }
     else if (!can_word_be_valid_label(entry_word, line_number)) {
         handleError("invalid name. invalid entry name", line_number);
     }
-    /*else if (is_label_exist(entry_word)){
-        handleError("invalid name. a label with the same name exists already", line_number);
-    }*/
     else {
         free(check_more_param);
         return 1;
@@ -149,6 +138,7 @@ int is_valid_entry( char* entry_word, char* line, int line_number) {
     return 0;
 }
 
+/* checks if black list is empty */
 int is_black_list_empty() {
     return labels_black_list == NULL;
 }
@@ -201,20 +191,13 @@ Label* getLabel(char* label) {
     return NULL;
 }
 
-void get_black_list() {
-    int i;
-    printf("========black list=========\n");
-    printf("counter of black list: %d\n", black_list_num);
-    for (i = 0; i < black_list_num; i++) {
-        printf("black list: %s\n",labels_black_list[i].name);
-    }
-}
-
+/* free Labels and Black List tables */
 void free_memory_label() {
     free(labels);
     free(labels_black_list);
 }
 
+/* initialize Labels and Black List tables */
 void initialize_labels() {
     labels = NULL;
     num_labels = 0;

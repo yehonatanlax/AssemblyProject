@@ -18,8 +18,6 @@ void add_data(char* str, char* label, int line_number);
 
 int push_data(char** data, int num, int line_number, int flag, char* label);
 
-void print_all_DC(); // TODO: remove
-
 void free_memory_dc();
 
 void initialize_dc();

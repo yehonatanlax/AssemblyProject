@@ -31,34 +31,25 @@ int main(int argc, char * argv[]) {
     initialize_ic();
     initialize_labels();
     clear_error_flag();
-
+    memset(filepath, '\0', strlen(argv[i])+1);
     strcpy(filepath,argv[i]);
     strcat(filepath, ".as");
-    printf("ffffile_path: %s\n",filepath);
-    printf("argv[i]: %s\n",argv[i]);
-    printf("argv[2]: %s\n",argv[2]);
     filepath = (char*)preprocessor(filepath, line_number);
-    printf("after preproccesor - ffffile_path: %s\n",filepath);
     analyzeFile(filepath,&ic, &dc);
+    memset(name_file, '\0', strlen(filepath)+1);
     strncpy(name_file, filepath, (strlen(filepath) - 3));
-    printf("nnnnnnn name_file: %s\n", name_file);
     second_pass(name_file);
     if (!flag_err) {
       create_ob_file(name_file);
     }
-    /* TODO: DELETE THESE FUNCTIONS */
-    get_externs();
-    get_black_list();
-    print_labels();
-    print_all_IC();
-    print_all_DC();
-
     free_memory_dc();
     free_memory_extern();
     free_memory_ic();
-    /*free_memory_label();*/
+    free_memory_label();
     free_memory_macro();
   }
+  free(filepath);
+  free(name_file);
 
   return 0;
 }

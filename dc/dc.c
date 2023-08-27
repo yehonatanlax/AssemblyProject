@@ -51,8 +51,6 @@ void add_string(char* str, char* label, int line_number){
     if (flag) {
         if (label == NULL || !is_label_exist(label)) { /* if label is given and already exist don't push */
             push_data(&new_str, strlen(new_str)+1, line_number, 0, label);
-            printf(" string added: %s\n", new_str);
-
             /* if this line is a label definition - save the label to labels table with an undefined address
                 that will be initialized in the second pass after all ic data will be loaded */
             if (label) {
@@ -75,7 +73,7 @@ void add_data(char* str, char* label, int line_number) {
     char* numbers[MAX_LINE_LENGTH]; /* all numbers found in line */
     int counter = 0; /* num of numbers in line */
     while (*str != '\0') {
-        char* num = getFirstWord(str);
+        char* num = get_first_word(str);
         /* if a number needs to be found in this iteration and a number is found */
         if (!number_found && is_number(num)) {
             numbers[counter] = num;
@@ -117,7 +115,7 @@ void add_data(char* str, char* label, int line_number) {
 /* add to data table */
 int push_data(char** data, int num, int line_number, int flag, char* label) {
     int i;
-    char temp_buffer[2]; // will hold chars of string data
+    char temp_buffer[2]; /* will hold chars of string data*/
     char* encode = malloc(12*sizeof(char));
     /* allocate memory */
     DC_data.dc_data = realloc(DC_data.dc_data, (DC_data.dc_counter + 1) * sizeof(DC_obj));
@@ -152,24 +150,6 @@ int push_data(char** data, int num, int line_number, int flag, char* label) {
     
     /* return address of data object in data table */
     return DC_data.dc_counter - 1 ;
-}
-
-/* TODO: REMOVE FUNCTION */
-void print_all_DC() {
-  int i, j;
-  printf("-------------------------------------------------------------------\n");
-  printf("---------------print all dc-------------------------------\n");
-  for (i = 0; i < DC_data.dc_counter; i++) {
-    /*//label = getLabel(DC_data.dc_data[i].label);
-    // if (label != NULL) {
-    //   for (j = 0; j < label->params_counter; j++) {
-    //     printf("%s\n", DC_data.dc_data[label->address + j]);
-    //   }
-    // } else {*/
-    for (j =0; j < DC_data.dc_data[i].num; j++) {
-      printf("%s\n", DC_data.dc_data[i].data[j]);
-    }
-  }
 }
 
 /* free memory allocation */

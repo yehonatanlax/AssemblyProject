@@ -30,6 +30,15 @@ char *bin_data(char *str, char *number, int line_number);
 /*convert a specific char from a string to binary rep.*/
 char *bin_char(char *str, char *number, int line_number);
 
+/*converting binary functions*/
+char *bin_to_b64_sign(char *, char *);
 
+int bin_to_dec(char *);
+
+char dec_to_b64(int);
+
+char *split_bin_to_first_part(char *bin_num);
+
+char *split_bin_to_second_part(char *bin_num);
 
 #endif

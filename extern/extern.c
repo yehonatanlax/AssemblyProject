@@ -11,9 +11,7 @@ int num_externs = 0;
 
 /* the functions handles an extern line */
 void handle_extern(char* directive, char* line, int line_number){
-    char* name_of_extern = NULL;
-    move_line_ptr_to_next_word(directive, line);
-    name_of_extern = getFirstWord(line);
+    char* name_of_extern = get_first_word(line);
     /* if the extern label is valid - add to externs table */
     if (is_valid_extern(name_of_extern, line, line_number)) {
         add_extern(name_of_extern);
@@ -29,7 +27,6 @@ void add_extern(char* name) {
     externs[num_externs].name = malloc(strlen(name) + 1);
     strcpy( externs[num_externs].name, name);
     externs[num_externs].num_of_instances = 0;
-    printf("extern added: %s\n",  externs[num_externs].name);
     num_externs++;
 }
 
@@ -51,7 +48,7 @@ int is_extern_exist(char* name){
 int is_valid_extern( char* extern_word, char* line, int line_number) { 
     char* check_more_param = NULL;
     move_line_ptr_to_next_word(extern_word, line);
-    check_more_param = getFirstWord(line); /* checks if there are other words after decleration */
+    check_more_param = get_first_word(line); /* checks if there are other words after decleration */
     /* if there are other words after decleration */
     if (!(check_more_param[0] == '\0')) {
         handleError("too many params for extern", line_number);
@@ -71,15 +68,6 @@ int is_valid_extern( char* extern_word, char* line, int line_number) {
 
     free(check_more_param);
     return 0;
-}
-
-/* TODO: removve */
-void get_externs(){
-    int i;
-    printf("============externs=================\n");
-    for (i = 0; i < num_externs; i++) {
-        printf("extern name: %s\n",externs[i].name);
-    }
 }
 
 /* free externs table */

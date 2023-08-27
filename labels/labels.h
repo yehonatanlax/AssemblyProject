@@ -34,8 +34,6 @@ void handle_entry_label(char* directive, char* line, int line_number);
 
 Blacked_Label* is_black_label_exist(char* label);
 
-void print_labels();
-
 void get_black_list();
 
 void free_memory_label();

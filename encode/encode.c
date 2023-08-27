@@ -11,6 +11,65 @@
 #include <stdlib.h>
 #include <string.h>
 
+
+
+/*takes the half binary and convert it to a b64 sign*/
+char *bin_to_b64_sign(char *first_part, char *second_part){
+int dec1, dec2;
+char sign1, sign2;
+char *double_sign = malloc(2*sizeof(char));
+  dec1 = bin_to_dec(first_part);
+  sign1 = dec_to_b64(dec1);
+  dec2 = bin_to_dec(second_part);
+  sign2 = dec_to_b64(dec2);
+  double_sign[0] = sign1;
+  double_sign[1] = sign2;
+
+  return double_sign;
+}
+
+/*convert binary number to a decimal number*/
+int bin_to_dec(char* dec){
+  int i;
+  int j = 0;
+  int sum = 0;
+  for(i = strlen(dec)-1; i >= 0 ; i--){
+    
+    if (dec[i] == '1')
+      sum += pow(2, j);
+    j++;
+  }
+  return sum;
+}
+
+/*converting the decimal number to base 64 sign*/
+char dec_to_b64(int num){
+  char base64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+  return base64[num];
+}
+
+char *split_bin_to_first_part(char *bin_num){
+    char* first_part = malloc(7*sizeof(char));
+    int i;
+    /*writing the first part*/
+    for(i=0; i < 6;i++){
+        first_part[i] = bin_num[i];
+    }
+    first_part[6] = 0;
+    return first_part;
+}
+
+char *split_bin_to_second_part(char *bin_num){
+    char* second_part = malloc(7*sizeof(char));
+    int i;
+    /*writing the second part*/
+    for(i=0; i < 6;i++){
+        second_part[i] = bin_num[i+6];
+    }
+    second_part[6] = '\0';
+    return second_part;
+}
+
 char *encode_binary(int src_type, int insruction, int dst_type, int a_r_e, int src_reg, int dst_reg, int address, char *number, int line_number) {
   char *str, *bin_src_type, *bin_insruction, *bin_dst_type, *bin_a_r_e = NULL;
   int i;
@@ -23,7 +82,6 @@ char *encode_binary(int src_type, int insruction, int dst_type, int a_r_e, int s
 
   str = (char *)malloc(BIN_LINE * sizeof(char)); /*Allocate memory for a 12-character string*/
   if (str == NULL) {
-    fprintf(stderr, "Memory allocation failed\n");
     return "Error in allocating";
   }
 
@@ -238,12 +296,6 @@ char *number, int line_number) {
     return 1;
   }
 
-  /*address test: the address can be in range 100 - 1023
-  num = atoi(address);
-  if ((num < 100 && num != -1) || (num > 1023 && num != -1))
-    handleError("Error with label address\n", line_number); TODO: DELETE COMMENT*/
-
-  /*comment: to the argument number we will make a speical tester*/
   return 0; 
 }
 

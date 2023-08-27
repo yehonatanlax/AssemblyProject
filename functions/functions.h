@@ -8,48 +8,29 @@
 #define B_64_LEN 2
 
 
+void remove_spaces_before(char *str);
 
-/*converting binary functions*/
-/*Main function*/
-char *bin_to_b64_sign(char *, char *);
-
-int bin_to_dec(char *);
-
-char dec_to_b64(int);
-
-char *split_bin_to_first_part(char *bin_num);
-
-char *split_bin_to_second_part(char *bin_num);
-
-char *write_binary_line(char* temp_binary);
-
-char *create_file_name(char *original, int format);
-
-void removeSpacesBefore(char *str);
-
-char * getFirstWord(char * str);
+char * get_first_word(char * str);
 
 char* checkFirstWord(char * word);
 
 int ignore(char * line);
 
-int isLineEmptyOrComment(char* line);
+int is_line_empty_or_comment(char* line);
 
 int can_word_be_valid_label(char* word, int line_number);
 
 int is_word_a_valid_label_declaration(char* word, int line_number);
 
-char* isDirective(char* line);
+char* is_directive(char* line);
 
-int isInstruction(char* line);
+int is_instruction(char* line);
 
 void handleError(char* err, int line_number);
 
 char* findNextWord(int size, char* line);
 
 int instruction_params_num(char* instruction);
-
-int count_word(char* line);
 
 void handle_instruction(char* instruction, char* line, char* label, int line_number);
 
@@ -64,8 +45,6 @@ void move_line_ptr_to_next_word(char* word, char* line);
 /* label: address = address of label , ARE. all the rest = -1 */
 /* number: number , ARE. all the rest = -1 */
 char* encode_binary(int src_type, int insruction, int dst_type, int ARE, int src_reg, int dst_reg, int address, char* number, int line_number);
-
-char* encode_two_regs(char* reg_src, char* reg_dst);/* TODO:DELETE */
 
 int remove_comma(char* line, int line_number);
 
